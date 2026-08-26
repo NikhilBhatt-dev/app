@@ -1,0 +1,20 @@
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css";
+
+@import "nativewind/theme";
+
+@theme {
+  --color-primary: #2563eb;
+  --color-secondary: #7c3aed;
+  --color-success: #22c55e;
+  --color-danger: #ef4444;
+  --color-background: #f8fafc;
+  --color-dark: #0f172a;
+
+  --font-heading: "Poppins";
+  --font-body: "Inter";
+
+  --spacing-18: 4.5rem;
+  --spacing-22: 5.5rem;
+}
