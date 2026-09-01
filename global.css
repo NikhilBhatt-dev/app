@@ -81,10 +81,9 @@
     .home-add-icon {
         @apply size-12;
     }
-
-    .home-balance-card {
-        @apply my-2.5 min-h-50 justify-between gap-5 rounded-bl-4xl rounded-tr-4xl bg-accent p-6;
-    }
+.home-balance-card {
+    @apply my-2.5 min-h-[200px] justify-between gap-5 rounded-bl-[32px] rounded-tr-[32px] bg-accent p-6;
+}
 
     .home-balance-label {
         @apply text-xl font-sans-semibold text-white/80;
