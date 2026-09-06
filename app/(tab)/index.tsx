@@ -23,23 +23,31 @@ export default function Home() {
     useState<string | null>(null);
 
   return (
-    <SafeAreaView className="flex-1 bg-background p-5">
+    <SafeAreaView className="flex-1 bg-background">
       <FlatList
         data={HOME_SUBSCRIPTIONS}
         keyExtractor={(item) => item.id}
+        extraData={expandedSubscriptionId}
         renderItem={({ item }) => (
-          <SubscriptionCard
-            {...item}
-            expanded={expandedSubscriptionId === item.id}
-            onPress={() =>
-              setExpandedSubscriptionId((currentId) =>
-                currentId === item.id ? null : item.id
-              )
-            }
-          />
+          <View className="px-5">
+            <SubscriptionCard
+              {...item}
+              expanded={expandedSubscriptionId === item.id}
+              onPress={() =>
+                setExpandedSubscriptionId((currentId) =>
+                  currentId === item.id ? null : item.id
+                )
+              }
+            />
+          </View>
         )}
+        ItemSeparatorComponent={() => <View className="h-4" />}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingBottom: 140,
+        }}
         ListHeaderComponent={
-          <>
+          <View className="px-5">
             {/* Header */}
             <View className="home-header">
               <View className="home-user">
@@ -92,11 +100,18 @@ export default function Home() {
               />
             </View>
 
-            {/* All Subscriptions */}
-            <ListHeading title="All Subscription" />
-          </>
+            {/* All Subscriptions Heading */}
+            <ListHeading title="All Subscriptions" />
+
+            <View className="h-4" />
+          </View>
         }
-        contentContainerStyle={{ paddingBottom: 120 }}
+        ListEmptyComponent={
+          <Text className="home-empty-state px-5">
+            No subscription yet.
+          </Text>
+        }
+        contentContainerClassName="pb-30"
       />
     </SafeAreaView>
   );
