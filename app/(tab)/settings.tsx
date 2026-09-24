@@ -2,6 +2,7 @@ import { useClerk } from "@clerk/expo";
 import { useState } from "react";
 import { Pressable, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { posthog } from "@/lib/posthog";
 
 export default function Settings() {
   const { signOut } = useClerk();
@@ -12,6 +13,9 @@ export default function Settings() {
     setIsSigningOut(true);
     try {
       await signOut();
+      posthog?.capture("user_signed_out");
+      posthog?.logger.info("sign_out_completed");
+      posthog?.reset();
     } finally {
       setIsSigningOut(false);
     }

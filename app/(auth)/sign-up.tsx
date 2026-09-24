@@ -1,5 +1,6 @@
 import { useSignUp } from "@clerk/expo";
 import { Link, useRouter } from "expo-router";
+import { posthog } from "@/lib/posthog";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -68,6 +69,7 @@ export default function SignUp() {
         if (signUp.status === "complete") {
           const finalizeResult = await signUp.finalize();
           if (finalizeResult.error) throw finalizeResult.error;
+          posthog?.capture("user_signed_up");
           router.replace("/(tab)");
         } else {
           setError("That code is not valid yet. Check your email and try again.");

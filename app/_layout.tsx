@@ -1,11 +1,13 @@
 
 import "@/global.css";
-import { ClerkProvider, useAuth } from "@clerk/expo";
+import { ClerkProvider, useAuth, useUser } from "@clerk/expo";
 import { tokenCache } from "@clerk/expo/token-cache";
 import { useFonts } from "expo-font";
 import { SplashScreen, Stack } from "expo-router";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { ActivityIndicator, Text, View } from "react-native";
+import { PostHogProvider } from "posthog-react-native";
+import { posthog } from "@/lib/posthog";
 
 // Prevent splash screen from hiding automatically
 SplashScreen.preventAutoHideAsync();
@@ -21,7 +23,13 @@ export default function RootLayout() {
 
   return (
     <ClerkProvider publishableKey={publishableKey} tokenCache={tokenCache}>
-      <AppLayout />
+      {posthog ? (
+        <PostHogProvider client={posthog}>
+          <AppLayout />
+        </PostHogProvider>
+      ) : (
+        <AppLayout />
+      )}
     </ClerkProvider>
   );
 }
@@ -51,7 +59,24 @@ function AppLayout() {
 }
 
 function AuthLayout() {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn, userId } = useAuth();
+  const { isLoaded: isUserLoaded, user } = useUser();
+  const identifiedUserId = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
+    if (!userId) {
+      identifiedUserId.current = null;
+      return;
+    }
+
+    if (!isUserLoaded || identifiedUserId.current === userId) return;
+
+    const email = user?.primaryEmailAddress?.emailAddress;
+    posthog?.identify(userId, email ? { email } : undefined);
+    identifiedUserId.current = userId;
+  }, [isLoaded, isUserLoaded, user, userId]);
 
   if (!isLoaded) {
     return (

@@ -3,12 +3,13 @@ import "@/global.css";
 import { Image, Text, View, FlatList } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
+import { useUser } from "@clerk/expo";
+import { posthog } from "@/lib/posthog";
 
 import images from "@/constants/images";
 import {
   HOME_BALANCE,
   HOME_SUBSCRIPTIONS,
-  HOME_USER,
   UPCOMING_SUBSCRIPTIONS,
 } from "@/constants/data";
 import { icons } from "@/constants/icons";
@@ -19,8 +20,35 @@ import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
 
 export default function Home() {
+  const { user } = useUser();
   const [expandedSubscriptionId, setExpandedSubscriptionId] =
     useState<string | null>(null);
+  const userName =
+    user?.fullName ??
+    user?.firstName ??
+    user?.username ??
+    user?.primaryEmailAddress?.emailAddress.split("@")[0] ??
+    "there";
+  const handleSubscriptionPress = (
+    subscription: (typeof HOME_SUBSCRIPTIONS)[number]
+  ) => {
+    const isOpening = expandedSubscriptionId !== subscription.id;
+    setExpandedSubscriptionId(isOpening ? subscription.id : null);
+
+    if (isOpening) {
+      posthog?.capture("subscription_expanded", {
+        subscription_id: subscription.id,
+        billing_interval: subscription.billing,
+        ...(subscription.status && {
+          subscription_status: subscription.status,
+        }),
+      });
+      posthog?.logger.info("subscription_details_opened", {
+        billing_interval: subscription.billing,
+        subscription_status: subscription.status,
+      });
+    }
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-background">
@@ -33,11 +61,7 @@ export default function Home() {
             <SubscriptionCard
               {...item}
               expanded={expandedSubscriptionId === item.id}
-              onPress={() =>
-                setExpandedSubscriptionId((currentId) =>
-                  currentId === item.id ? null : item.id
-                )
-              }
+              onPress={() => handleSubscriptionPress(item)}
             />
           </View>
         )}
@@ -53,7 +77,7 @@ export default function Home() {
               <View className="home-user">
                 <Image source={images.avatar} className="home-avatar" />
 
-                <Text className="home-user-name">{HOME_USER.name}</Text>
+                <Text className="home-user-name">{userName}</Text>
               </View>
 
               <Image source={icons.add} className="home-add-icon" />

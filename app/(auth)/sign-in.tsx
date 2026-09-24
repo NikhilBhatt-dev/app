@@ -1,5 +1,6 @@
 import { useSignIn } from "@clerk/expo";
 import { Link, useRouter } from "expo-router";
+import { posthog } from "@/lib/posthog";
 import { useState } from "react";
 import {
   KeyboardAvoidingView,
@@ -56,6 +57,10 @@ export default function SignIn() {
       if (signIn.status === "complete") {
         const finalizeResult = await signIn.finalize();
         if (finalizeResult.error) throw finalizeResult.error;
+        posthog?.capture("user_signed_in");
+        posthog?.logger.info("sign_in_completed", {
+          authentication_method: "password",
+        });
         router.replace("/(tab)");
       } else {
         setError("Additional verification is required for this account.");
