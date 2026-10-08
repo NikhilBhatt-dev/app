@@ -1,6 +1,6 @@
 import "@/global.css";
 
-import { Image, Text, View, FlatList } from "react-native";
+import { Image, Text, View, FlatList, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useState } from "react";
 import { useUser } from "@clerk/expo";
@@ -18,9 +18,14 @@ import { formatCurrency } from "@/constants/lib/utils";
 import ListHeading from "@/components/ListHeading";
 import UpcomingSubscriptionCard from "@/components/UpcomingSubscriptionCard";
 import SubscriptionCard from "@/components/SubscriptionCard";
+import CreateSubscriptionModal from "@/components/CreateSubscriptionModal";
 
 export default function Home() {
   const { user } = useUser();
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([
+    ...HOME_SUBSCRIPTIONS,
+  ]);
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [expandedSubscriptionId, setExpandedSubscriptionId] =
     useState<string | null>(null);
   const userName =
@@ -53,7 +58,7 @@ export default function Home() {
   return (
     <SafeAreaView className="flex-1 bg-background">
       <FlatList
-        data={HOME_SUBSCRIPTIONS}
+        data={subscriptions}
         keyExtractor={(item) => item.id}
         extraData={expandedSubscriptionId}
         renderItem={({ item }) => (
@@ -80,7 +85,14 @@ export default function Home() {
                 <Text className="home-user-name">{userName}</Text>
               </View>
 
-              <Image source={icons.add} className="home-add-icon" />
+              <Pressable
+                onPress={() => setIsCreateModalVisible(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Create subscription"
+                hitSlop={8}
+              >
+                <Image source={icons.add} className="home-add-icon" />
+              </Pressable>
             </View>
 
             {/* Balance */}
@@ -136,6 +148,17 @@ export default function Home() {
           </Text>
         }
         contentContainerClassName="pb-30"
+      />
+      <CreateSubscriptionModal
+        visible={isCreateModalVisible}
+        onClose={() => setIsCreateModalVisible(false)}
+        onCreate={(subscription) => {
+          setSubscriptions((currentSubscriptions) => [
+            subscription,
+            ...currentSubscriptions,
+          ]);
+          setExpandedSubscriptionId(null);
+        }}
       />
     </SafeAreaView>
   );
